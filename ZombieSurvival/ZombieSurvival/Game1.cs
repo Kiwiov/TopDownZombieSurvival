@@ -11,6 +11,7 @@ namespace ZombieSurvival
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        Vector2 position;
 
         public Game1()
         {
@@ -62,8 +63,25 @@ namespace ZombieSurvival
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+           KeyboardState kb = new KeyboardState();
 
+            if (kb.IsKeyDown(Keys.A) || kb.IsKeyDown(Keys.Left))
+            {
+                position.X = position.X - 5;
+            }
+
+            if (kb.IsKeyDown(Keys.D) || kb.IsKeyDown(Keys.Right))
+            {
+                position.X = position.X + 5;
+            }
+            if (kb.IsKeyDown(Keys.W) || kb.IsKeyDown(Keys.Up))
+            {
+                position.Y = position.Y + 5;
+            }
+            if (kb.IsKeyDown(Keys.S) || kb.IsKeyDown(Keys.Down))
+            {
+                position.Y = position.Y - 5;
+            }
             base.Update(gameTime);
         }
 
