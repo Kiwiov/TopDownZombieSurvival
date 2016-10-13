@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Runtime.CompilerServices;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -12,6 +14,13 @@ namespace ZombieSurvival
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Vector2 position;
+        Texture2D character;
+        
+        
+        Texture2D curs;
+        
+
+
 
         public Game1()
         {
@@ -28,6 +37,11 @@ namespace ZombieSurvival
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            position = new Vector2(300,300);
+
+            
+
+
 
             base.Initialize();
         }
@@ -41,7 +55,8 @@ namespace ZombieSurvival
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            character = Content.Load<Texture2D>("manBlue_gun");
+            curs = Content.Load<Texture2D>("crshair_36px");
         }
 
         /// <summary>
@@ -63,7 +78,28 @@ namespace ZombieSurvival
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-           KeyboardState kb = new KeyboardState();
+            
+            
+
+
+            GamePadCapabilities c = GamePad.GetCapabilities(PlayerIndex.One);
+            if (c.IsConnected)
+            {
+                GamePadState state = GamePad.GetState(PlayerIndex.One);
+                if (c.HasLeftXThumbStick)
+                {
+                    position.X += state.ThumbSticks.Left.X * 10.0f;
+                }
+                if (c.GamePadType == GamePadType.GamePad)
+                {
+                    if (state.IsButtonDown(Buttons.A))
+                    {
+                        Exit();
+                    }
+                }
+            }
+
+            KeyboardState kb = Keyboard.GetState();
 
             if (kb.IsKeyDown(Keys.A) || kb.IsKeyDown(Keys.Left))
             {
@@ -76,12 +112,19 @@ namespace ZombieSurvival
             }
             if (kb.IsKeyDown(Keys.W) || kb.IsKeyDown(Keys.Up))
             {
-                position.Y = position.Y + 5;
+                position.Y = position.Y - 5;
             }
             if (kb.IsKeyDown(Keys.S) || kb.IsKeyDown(Keys.Down))
             {
-                position.Y = position.Y - 5;
+                position.Y = position.Y + 5;
             }
+
+
+
+            //Vector2 mousePos = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
+
+
+
             base.Update(gameTime);
         }
 
@@ -94,6 +137,10 @@ namespace ZombieSurvival
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+            spriteBatch.Begin();
+            spriteBatch.Draw(character, position, null, color:Color.White, origin: new Vector2(character.Bounds.Center.X, character.Bounds.Center.Y));
+            spriteBatch.Draw(curs,new Vector2(Mouse.GetState().X, Mouse.GetState().Y) , Color.White);
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
