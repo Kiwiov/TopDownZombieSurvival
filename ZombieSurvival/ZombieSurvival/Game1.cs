@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,11 +16,11 @@ namespace ZombieSurvival
         SpriteBatch spriteBatch;
         Vector2 position;
         Texture2D character;
-        
-        
+        Vector2 dPos;
+        Vector2 mousePos;
         Texture2D curs;
+        float rot;
         
-
 
 
         public Game1()
@@ -38,8 +39,8 @@ namespace ZombieSurvival
         {
             // TODO: Add your initialization logic here
             position = new Vector2(300,300);
-
             
+
 
 
 
@@ -118,10 +119,13 @@ namespace ZombieSurvival
             {
                 position.Y = position.Y + 5;
             }
+            
 
 
 
-            //Vector2 mousePos = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
+            mousePos = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
+            dPos = mousePos - position;
+            rot = (float) Math.Atan2(dPos.Y, dPos.X);
 
 
 
@@ -138,8 +142,8 @@ namespace ZombieSurvival
 
             // TODO: Add your drawing code here
             spriteBatch.Begin();
-            spriteBatch.Draw(character, position, null, color:Color.White, origin: new Vector2(character.Bounds.Center.X, character.Bounds.Center.Y));
-            spriteBatch.Draw(curs,new Vector2(Mouse.GetState().X, Mouse.GetState().Y) , Color.White);
+            spriteBatch.Draw(character, position, null, color:Color.White, rotation:rot, origin: new Vector2(character.Bounds.Center.X, character.Bounds.Center.Y));
+            spriteBatch.Draw(curs, mousePos, Color.White);
             spriteBatch.End();
 
             base.Draw(gameTime);
