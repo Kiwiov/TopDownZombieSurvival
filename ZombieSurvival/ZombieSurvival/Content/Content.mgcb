@@ -73,3 +73,9 @@
 /processorParam:TextureFormat=Color
 /build:bullet.png
 
+#begin gunShot.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:gunShot.mp3
+
