@@ -9,13 +9,12 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using TiledSharp;
-
 namespace ZombieSurvival
 {
     public class Game1 : Microsoft.Xna.Framework.Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        readonly GraphicsDeviceManager _graphics;
+        private SpriteBatch _spriteBatch;
         TileEngineGood tileEngineGood;
         TmxMap map;
         Vector2 position;
@@ -27,10 +26,25 @@ namespace ZombieSurvival
         float stamina;
         Camera cam;
         Vector2 mousePosition;
+
+        private enum GameState
+        {
+            Menu,
+            Options,
+            Playing,
+            Paused
+        }
+         GameState _currentGameState = GameState.Menu;
+
+        // Screen Adjustments
+        readonly int _screenWidth = 1920;
+        readonly int _screenHeight = 1200;
+
+        private CButton _btnPlay;
         public Game1()
         {
             
-            graphics = new GraphicsDeviceManager(this);
+            _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             graphics.PreferredBackBufferHeight = 1080;
             graphics.PreferredBackBufferWidth = 1920;
@@ -39,6 +53,12 @@ namespace ZombieSurvival
         }
 
         
+
+
+        
+        
+
+
         protected override void Initialize()
         {
             position = new Vector2(1600,1300);
@@ -49,17 +69,28 @@ namespace ZombieSurvival
 
         protected override void LoadContent()
         {
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
             map = new TmxMap("house.tmx");
             tileEngineGood = new TileEngineGood(map);
             tileEngineGood.LoadContent(this);
             character = Content.Load<Texture2D>("hitman2_gun");
             curs = Content.Load<Texture2D>("crshair_36px");
+            // Screen stuff
+            _graphics.PreferredBackBufferWidth = _screenWidth;
+            _graphics.PreferredBackBufferHeight = _screenHeight;
+            _graphics.IsFullScreen = true;
+            _graphics.ApplyChanges();
+            IsMouseVisible = true;
+
+            _btnPlay = new CButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
+            _btnPlay.SetPosition(new Vector2(750, 600));
         }
 
         protected override void UnloadContent()
         {
         }
+
+
 
         protected override void Update(GameTime gameTime)
         {
@@ -82,11 +113,42 @@ namespace ZombieSurvival
                 {
                     if (state.IsButtonDown(Buttons.A))
                     {
+            MouseState mouse = Mouse.GetState();
+
+
+      
+
+            
+            switch (_currentGameState)
+            {
+                case GameState.Menu:
+                    if(_btnPlay.IsClicked != true) _currentGameState = GameState.Menu;
+                    _btnPlay.Update(mouse);
+                    break;
+
+                case GameState.Playing:
+                    if (_btnPlay.IsClicked == true) _currentGameState = GameState.Playing;
+                    _btnPlay.Update(mouse);
+                    break;
+
+                case GameState.Options:
                         Exit();
+
+                    break;
+
+                case GameState.Paused:
                     }
                 }
             }
 
+                    break;
+
+                default:
+
+                break;
+                    
+            }
+            
             KeyboardState kb = Keyboard.GetState();
 
             if ((kb.IsKeyDown(Keys.LeftShift) || kb.IsKeyDown(Keys.RightShift)) && stamina > 0)
@@ -206,6 +268,31 @@ namespace ZombieSurvival
             spriteBatch.Draw(character, position, null, color:Color.White, rotation:rot, origin: new Vector2(character.Bounds.Center.X, character.Bounds.Center.Y));
             spriteBatch.Draw(curs, mousePosition, Color.GreenYellow);
             spriteBatch.End();
+            _spriteBatch.Begin();
+            switch (_currentGameState)
+            {
+                case GameState.Menu:
+                    _spriteBatch.Draw(Content.Load<Texture2D>("Images/background"), new Rectangle(0, 0, _screenWidth, _screenHeight), Color.White);
+                    _btnPlay.Draw(_spriteBatch);
+                    break;
+
+                case GameState.Playing:
+
+                    break;
+
+                case GameState.Options:
+
+                    break;
+
+                case GameState.Paused:
+
+                    break;
+
+                default:
+
+                    break;
+            }
+            _spriteBatch.End();
 
             base.Draw(gameTime);
         }
