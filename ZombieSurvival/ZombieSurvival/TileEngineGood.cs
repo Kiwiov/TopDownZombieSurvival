@@ -11,7 +11,8 @@ namespace ZombieSurvival
     {
         TmxMap map;
         Texture2D tileset;
-        public List<Rectangle> hitboxes = new List<Rectangle>();
+        public List<Rectangle> playerMapHitBoxes = new List<Rectangle>();
+        public List<Rectangle> mapHitBoxes = new List<Rectangle>();
         private bool hitBoxesRegistered = false;
 
         int tileWidth;
@@ -80,8 +81,16 @@ namespace ZombieSurvival
                     float x = (i % map.Width) * map.TileWidth;
                     float y = (float)Math.Floor(i / (double)map.Width) * map.TileHeight;
 
-                    hitboxes.Add(new Rectangle((int)x,(int)y,tileWidth,tileHeight));
-                    
+                    playerMapHitBoxes.Add(new Rectangle((int)x,(int)y,tileWidth,tileHeight));
+
+                    if (gid == 27)
+                    {
+                        
+                    }
+                    else
+                    {
+                        mapHitBoxes.Add(new Rectangle((int)x, (int)y, tileWidth, tileHeight));
+                    }
                 }
             }
         }

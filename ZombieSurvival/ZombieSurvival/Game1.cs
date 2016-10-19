@@ -19,20 +19,30 @@ namespace ZombieSurvival
         SpriteBatch spriteBatch;
         TileEngineGood tileEngineGood;
         TmxMap map;
-        Vector2 position;
+        Camera cam;
+
         Texture2D character;
         Texture2D bullet;
+        Texture2D curs;
+        Texture2D zombieTextureOne;
+        Texture2D zombieTextureOneAttack;
+        Texture2D zombieTextureTwo;
+        Texture2D zombieTextureTwoAttack;
+
+        Vector2 position;
+        Vector2 previusPosition;
         Vector2 dPos;
         Vector2 mousePos;
-        Vector2 previusPosition;
-        Texture2D curs;
-        float rot;
-        float stamina;
-        Camera cam;
         Vector2 mousePosition;
-        List<Bullet> shots = new List<Bullet>();
+        
+        List<Bullet> shots;
+        List<Zombie> zombies;
+
         Song bSong;
         SoundEffect shot;
+
+        float rot;
+        float stamina;
         float playerHitBoxRadius;
         
         public Game1()
@@ -49,12 +59,14 @@ namespace ZombieSurvival
         
         protected override void Initialize()
         {
-            position = new Vector2(1600,1300);
+            position = new Vector2(2100,1900);
             previusPosition = position;
             cam = new Camera();
             mousePosition = new Vector2();
             base.Initialize();
             playerHitBoxRadius = 25;
+            shots = new List<Bullet>();
+            zombies = new List<Zombie>();
         }
 
         protected override void LoadContent()
@@ -67,9 +79,13 @@ namespace ZombieSurvival
             character = Content.Load<Texture2D>("hitman2_gun");
             bullet = Content.Load<Texture2D>("bullet");
             curs = Content.Load<Texture2D>("crshair_36px");
+            zombieTextureOne = Content.Load<Texture2D>("zoimbie1_stand");
+            zombieTextureTwo = Content.Load<Texture2D>("zombie2_stand");
+            zombieTextureOneAttack = Content.Load<Texture2D>("zoimbie1_hold");
+            zombieTextureTwoAttack = Content.Load<Texture2D>("zombie2_hold");
             bSong = Content.Load<Song>("bsong");
             shot = Content.Load<SoundEffect>("KiaGun");
-            MediaPlayer.Play(bSong);
+            //MediaPlayer.Play(bSong);
             MediaPlayer.IsRepeating = true;
         }
 
@@ -105,13 +121,24 @@ namespace ZombieSurvival
             if (Mouse.GetState().LeftButton == ButtonState.Pressed)
             {
                 shot.Play();
-                shots.Add(new Bullet(bullet, position, new Vector2(100 * (float)Math.Cos(rot), 100 * (float)Math.Sin(rot)),rot));
-                
+                shots.Add(new Bullet(bullet, position, new Vector2(5 * (float)Math.Cos(rot), 5 * (float)Math.Sin(rot)),rot));
+            }
+            //Kia was here I saw nothing
+            
+            foreach (var bullet in shots)
+            {
+                bullet.position += bullet.speed;
             }
 
-            foreach (var shot in shots)
+            foreach (var hitbox in tileEngineGood.mapHitBoxes)
             {
-                shot.position += shot.speed;
+                for (int i = 0; i < shots.Count; i++)
+                {
+                    if (shots.Count > 0 && hitbox.Contains(shots[i].position))
+                    {
+                        shots.Remove(shots[i]);
+                    }
+                }
             }
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
@@ -122,12 +149,12 @@ namespace ZombieSurvival
                 
                 if ((kb.IsKeyDown(Keys.A) || kb.IsKeyDown(Keys.Left)) && (kb.IsKeyDown(Keys.W) || kb.IsKeyDown(Keys.Up)))
                 {
-                    if (HitBoxHit("x") != "left")
+                    if (MapHitBoxHit("x") != "left")
                     {
                         previusPosition = position;
                         position.X -= 3.5355339059327376220042218105242f;
                     }
-                    if (HitBoxHit("y") != "above")
+                    if (MapHitBoxHit("y") != "above")
                     {
                         previusPosition = position;
                         position.Y -= 3.5355339059327376220042218105242f;
@@ -135,12 +162,12 @@ namespace ZombieSurvival
                 }
                 else if ((kb.IsKeyDown(Keys.D) || kb.IsKeyDown(Keys.Right)) && (kb.IsKeyDown(Keys.W) || kb.IsKeyDown(Keys.Up)))
                 {
-                    if (HitBoxHit("x") != "right")
+                    if (MapHitBoxHit("x") != "right")
                     {
                         previusPosition = position;
                         position.X += 3.5355339059327376220042218105242f;
                     }
-                    if (HitBoxHit("y") != "above")
+                    if (MapHitBoxHit("y") != "above")
                     {
                         previusPosition = position;
                         position.Y -= 3.5355339059327376220042218105242f;
@@ -148,12 +175,12 @@ namespace ZombieSurvival
                 }
                 else if ((kb.IsKeyDown(Keys.A) || kb.IsKeyDown(Keys.Left)) && (kb.IsKeyDown(Keys.S) || kb.IsKeyDown(Keys.Down)))
                 {
-                    if (HitBoxHit("x") != "left")
+                    if (MapHitBoxHit("x") != "left")
                     {
                         previusPosition = position;
                         position.X -= 3.5355339059327376220042218105242f;
                     }
-                    if (HitBoxHit("y") != "below")
+                    if (MapHitBoxHit("y") != "below")
                     {
                         previusPosition = position;
                         position.Y += 3.5355339059327376220042218105242f;
@@ -161,12 +188,12 @@ namespace ZombieSurvival
                 }
                 else if ((kb.IsKeyDown(Keys.D) || kb.IsKeyDown(Keys.Right)) && (kb.IsKeyDown(Keys.S) || kb.IsKeyDown(Keys.Down)))
                 {
-                    if (HitBoxHit("x") != "right")
+                    if (MapHitBoxHit("x") != "right")
                     {
                         previusPosition = position;
                         position.X += 3.5355339059327376220042218105242f;
                     }
-                    if (HitBoxHit("y") != "below")
+                    if (MapHitBoxHit("y") != "below")
                     {
                         previusPosition = position;
                         position.Y += 3.5355339059327376220042218105242f;
@@ -174,7 +201,7 @@ namespace ZombieSurvival
                 }
                 else if (kb.IsKeyDown(Keys.A) || kb.IsKeyDown(Keys.Left))
                 {
-                    if (HitBoxHit("x") != "left")
+                    if (MapHitBoxHit("x") != "left")
                     {
                         previusPosition = position;
                         position.X -= 5;
@@ -183,7 +210,7 @@ namespace ZombieSurvival
 
                 else if (kb.IsKeyDown(Keys.D) || kb.IsKeyDown(Keys.Right))
                 {
-                    if (HitBoxHit("x") != "right")
+                    if (MapHitBoxHit("x") != "right")
                     {
                         previusPosition = position;
                         position.X += 5;
@@ -192,7 +219,7 @@ namespace ZombieSurvival
 
                 else if (kb.IsKeyDown(Keys.W) || kb.IsKeyDown(Keys.Up))
                 {
-                    if (HitBoxHit("y") != "above")
+                    if (MapHitBoxHit("y") != "above")
                     {
                         previusPosition = position;
                         position.Y -= 5;
@@ -200,7 +227,7 @@ namespace ZombieSurvival
                 }
                 else if (kb.IsKeyDown(Keys.S) || kb.IsKeyDown(Keys.Down))
                 {
-                    if (HitBoxHit("y") != "below")
+                    if (MapHitBoxHit("y") != "below")
                     {
                         previusPosition = position;
                         position.Y += 5;
@@ -217,12 +244,12 @@ namespace ZombieSurvival
                 }
                 if ((kb.IsKeyDown(Keys.A) || kb.IsKeyDown(Keys.Left)) && (kb.IsKeyDown(Keys.W) || kb.IsKeyDown(Keys.Up)))
                 {
-                    if (HitBoxHit("x") != "left")
+                    if (MapHitBoxHit("x") != "left")
                     {
                         previusPosition = position;
                         position.X -= 2.1213203435596425732025330863145f;
                     }
-                    if (HitBoxHit("y") != "above")
+                    if (MapHitBoxHit("y") != "above")
                     {
                         previusPosition = position;
                         position.Y -= 2.1213203435596425732025330863145f;
@@ -230,12 +257,12 @@ namespace ZombieSurvival
                 }
                 else if ((kb.IsKeyDown(Keys.D) || kb.IsKeyDown(Keys.Right)) && (kb.IsKeyDown(Keys.W) || kb.IsKeyDown(Keys.Up)))
                 {
-                    if (HitBoxHit("x") != "right")
+                    if (MapHitBoxHit("x") != "right")
                     {
                         previusPosition = position;
                         position.X += 2.1213203435596425732025330863145f;
                     }
-                    if (HitBoxHit("y") != "above")
+                    if (MapHitBoxHit("y") != "above")
                     {
                         previusPosition = position;
                         position.Y -= 2.1213203435596425732025330863145f;
@@ -243,12 +270,12 @@ namespace ZombieSurvival
                 }
                 else if ((kb.IsKeyDown(Keys.A) || kb.IsKeyDown(Keys.Left)) && (kb.IsKeyDown(Keys.S) || kb.IsKeyDown(Keys.Down)))
                 {
-                    if (HitBoxHit("x") != "left")
+                    if (MapHitBoxHit("x") != "left")
                     {
                         previusPosition = position;
                         position.X -= 2.1213203435596425732025330863145f;
                     }
-                    if (HitBoxHit("y") != "below")
+                    if (MapHitBoxHit("y") != "below")
                     {
                         previusPosition = position;
                         position.Y += 2.1213203435596425732025330863145f;
@@ -256,12 +283,12 @@ namespace ZombieSurvival
                 }
                 else if ((kb.IsKeyDown(Keys.D) || kb.IsKeyDown(Keys.Right)) && (kb.IsKeyDown(Keys.S) || kb.IsKeyDown(Keys.Down)))
                 {
-                    if (HitBoxHit("x") != "right")
+                    if (MapHitBoxHit("x") != "right")
                     {
                         previusPosition = position;
                         position.X += 2.1213203435596425732025330863145f;
                     }
-                    if (HitBoxHit("y") != "below")
+                    if (MapHitBoxHit("y") != "below")
                     {
                         previusPosition = position;
                         position.Y += 2.1213203435596425732025330863145f;
@@ -269,7 +296,7 @@ namespace ZombieSurvival
                 }
                 else if (kb.IsKeyDown(Keys.A) || kb.IsKeyDown(Keys.Left))
                 {
-                    if (HitBoxHit("x") != "left")
+                    if (MapHitBoxHit("x") != "left")
                     {
                         previusPosition = position;
                         position.X -= 3;
@@ -277,7 +304,7 @@ namespace ZombieSurvival
                 }
                 else if (kb.IsKeyDown(Keys.D) || kb.IsKeyDown(Keys.Right))
                 {
-                    if (HitBoxHit("x") != "right")
+                    if (MapHitBoxHit("x") != "right")
                     {
                         previusPosition = position;
                         position.X += 3;
@@ -286,7 +313,7 @@ namespace ZombieSurvival
 
                 else if (kb.IsKeyDown(Keys.W) || kb.IsKeyDown(Keys.Up))
                 {
-                    if (HitBoxHit("y") != "above")
+                    if (MapHitBoxHit("y") != "above")
                     {
                         previusPosition = position;
                         position.Y -= 3;
@@ -294,7 +321,7 @@ namespace ZombieSurvival
                 }
                 else if (kb.IsKeyDown(Keys.S) || kb.IsKeyDown(Keys.Down))
                 {
-                    if (HitBoxHit("y") != "below")
+                    if (MapHitBoxHit("y") != "below")
                     {
                         previusPosition = position;
                         position.Y += 3;
@@ -310,9 +337,9 @@ namespace ZombieSurvival
             base.Update(gameTime);
         }
 
-        private string HitBoxHit(string axis)
+        private string MapHitBoxHit(string axis)
         {
-            foreach (var hitbox in tileEngineGood.hitboxes)
+            foreach (var hitbox in tileEngineGood.playerMapHitBoxes)
             {
                 if (hitbox.Contains(position))
                 {

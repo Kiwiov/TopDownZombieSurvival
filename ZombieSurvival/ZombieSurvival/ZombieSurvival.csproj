@@ -44,6 +44,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TileEngineGood.cs" />
+    <Compile Include="Zombie.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Json2Map, Version=2.0.6020.20232, Culture=neutral, processorArchitecture=x86">
