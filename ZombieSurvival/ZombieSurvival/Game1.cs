@@ -25,20 +25,16 @@ namespace ZombieSurvival
         readonly int _screenHeight = 1200;
 
         private CButton _btnPlay;
+        private OButton _btnOption;
+        private EButton _btnExit;
+        private PButton _btnPause;
 
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
         }
-
         
-
-
-        
-        
-
-
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
         /// This is where it can query for any required services and load any non-graphic
@@ -69,7 +65,13 @@ namespace ZombieSurvival
             IsMouseVisible = true;
 
             _btnPlay = new CButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
-            _btnPlay.SetPosition(new Vector2(750, 600));
+            _btnPlay.SetPosition(new Vector2(800, 900));
+            _btnOption = new OButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
+            _btnOption.SetPosition(new Vector2(450, 1000));
+            _btnExit = new EButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
+            _btnExit.SetPosition(new Vector2(1150, 1000));
+            _btnPause = new PButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
+            _btnPause.SetPosition(new Vector2(750, 1200));
         }
 
         /// <summary>
@@ -92,33 +94,42 @@ namespace ZombieSurvival
         {
             MouseState mouse = Mouse.GetState();
 
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
 
-      
 
-            
             switch (_currentGameState)
             {
                 case GameState.Menu:
-                    if(_btnPlay.IsClicked != true) _currentGameState = GameState.Menu;
+                    if (_btnPlay.IsClicked)
+                    _currentGameState = GameState.Playing;
                     _btnPlay.Update(mouse);
+                    if (_btnOption.IsClicked) _currentGameState = GameState.Paused;
+                    _btnOption.Update(mouse);
+                    if (_btnExit.IsClicked) _currentGameState = GameState.Options;
+                    _btnExit.Update(mouse);
                     break;
 
                 case GameState.Playing:
-                    if (_btnPlay.IsClicked == true) _currentGameState = GameState.Playing;
-                    _btnPlay.Update(mouse);
+                    if (_btnPause.IsClicked) _currentGameState = GameState.Paused;
+                    _btnPause.Update(mouse);
                     break;
 
-                case GameState.Options:
-
+                    case GameState.Options:
+                    if (_btnExit.IsClicked) _currentGameState = GameState.Options;
+                    _btnExit.Update(mouse);
                     break;
 
                 case GameState.Paused:
-
+                    if (_btnPlay.IsClicked) _currentGameState = GameState.Paused;
+                    _btnPlay.Update(mouse);
+                    if (_btnOption.IsClicked) _currentGameState = GameState.Paused;
+                    _btnOption.Update(mouse);
+                    if (_btnExit.IsClicked) _currentGameState = GameState.Paused;
+                    _btnExit.Update(mouse);
                     break;
 
-                default:
-
-                break;
+                
                     
             }
             
@@ -138,8 +149,11 @@ namespace ZombieSurvival
             switch (_currentGameState)
             {
                 case GameState.Menu:
-                    _spriteBatch.Draw(Content.Load<Texture2D>("Images/background"), new Rectangle(0, 0, _screenWidth, _screenHeight), Color.White);
+                    _spriteBatch.Draw(Content.Load<Texture2D>("Images/zombie-survival"), new Rectangle(0, 0, _screenWidth, _screenHeight), Color.White);
                     _btnPlay.Draw(_spriteBatch);
+                    _btnOption.Draw(_spriteBatch);
+                    _btnExit.Draw(_spriteBatch);
+
                     break;
 
                 case GameState.Playing:
@@ -154,9 +168,7 @@ namespace ZombieSurvival
 
                     break;
 
-                default:
-
-                    break;
+                
             }
             _spriteBatch.End();
 

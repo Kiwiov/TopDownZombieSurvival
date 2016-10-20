@@ -39,7 +39,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="cButton.cs" />
+    <Compile Include="eButton.cs" />
     <Compile Include="Game1.cs" />
+    <Compile Include="oButton.cs" />
+    <Compile Include="pButton.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
