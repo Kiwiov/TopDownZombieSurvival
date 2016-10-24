@@ -1,6 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Net.Mime;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using static System.Net.Mime.MediaTypeNames;
+
 namespace ZombieSurvival
 {
     /// <summary>
@@ -16,19 +19,23 @@ namespace ZombieSurvival
             Menu,
             Options,
             Playing,
+            HighScore,
+            Exit,
             Paused
         }
          GameState _currentGameState = GameState.Menu;
 
         // Screen Adjustments
-        readonly int _screenWidth = 1920;
-        readonly int _screenHeight = 1200;
+        readonly int screenWidth = 1920;
+        readonly int screenHeight = 1200;
 
         private CButton _btnPlay;
-        private OButton _btnOption;
-        private EButton _btnExit;
-        private PButton _btnPause;
+        private CButton _btnOption;
+        private CButton _btnExit;
+        private CButton _btnMenu;
+        private CButton _btnHighScore;
 
+        
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -58,20 +65,22 @@ namespace ZombieSurvival
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Screen stuff
-            _graphics.PreferredBackBufferWidth = _screenWidth;
-            _graphics.PreferredBackBufferHeight = _screenHeight;
-            _graphics.IsFullScreen = true;
+            _graphics.PreferredBackBufferWidth = screenWidth;
+            _graphics.PreferredBackBufferHeight = screenHeight;
+            //_graphics.IsFullScreen = true;
             _graphics.ApplyChanges();
             IsMouseVisible = true;
 
             _btnPlay = new CButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
             _btnPlay.SetPosition(new Vector2(800, 900));
-            _btnOption = new OButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
+            _btnOption = new CButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
             _btnOption.SetPosition(new Vector2(450, 1000));
-            _btnExit = new EButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
-            _btnExit.SetPosition(new Vector2(1150, 1000));
-            _btnPause = new PButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
-            _btnPause.SetPosition(new Vector2(750, 1200));
+            _btnExit = new CButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
+            _btnExit.SetPosition(new Vector2(800, 1100));
+            _btnHighScore = new CButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
+            _btnHighScore.SetPosition(new Vector2(1200, 1000));
+            _btnMenu = new CButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
+            _btnMenu.SetPosition(new Vector2(100, 1100));
         }
 
         /// <summary>
@@ -104,29 +113,38 @@ namespace ZombieSurvival
                     if (_btnPlay.IsClicked)
                     _currentGameState = GameState.Playing;
                     _btnPlay.Update(mouse);
-                    if (_btnOption.IsClicked) _currentGameState = GameState.Paused;
+                    if (_btnOption.IsClicked) _currentGameState = GameState.Options;
                     _btnOption.Update(mouse);
-                    if (_btnExit.IsClicked) _currentGameState = GameState.Options;
+                    if (_btnExit.IsClicked) Exit();
                     _btnExit.Update(mouse);
+                    if (_btnHighScore.IsClicked) _currentGameState = GameState.HighScore;
+                    _btnHighScore.Update(mouse);
                     break;
 
                 case GameState.Playing:
-                    if (_btnPause.IsClicked) _currentGameState = GameState.Paused;
-                    _btnPause.Update(mouse);
+                    if (_btnPlay.IsClicked) _currentGameState = GameState.Paused;
+                    _btnPlay.Update(mouse);
+                    if (_btnMenu.IsClicked) _currentGameState = GameState.Menu;
+                    _btnMenu.Update(mouse);
                     break;
 
                     case GameState.Options:
-                    if (_btnExit.IsClicked) _currentGameState = GameState.Options;
-                    _btnExit.Update(mouse);
+                    if (_btnMenu.IsClicked) _currentGameState = GameState.Menu;
+                    _btnMenu.Update(mouse);
+                    break;
+
+                case GameState.HighScore:
+                    if (_btnMenu.IsClicked) _currentGameState = GameState.Menu;
+                    _btnMenu.Update(mouse);
                     break;
 
                 case GameState.Paused:
-                    if (_btnPlay.IsClicked) _currentGameState = GameState.Paused;
+                    if (_btnPlay.IsClicked) _currentGameState = GameState.Playing;
                     _btnPlay.Update(mouse);
-                    if (_btnOption.IsClicked) _currentGameState = GameState.Paused;
+                    if (_btnOption.IsClicked) _currentGameState = GameState.Options;
                     _btnOption.Update(mouse);
-                    if (_btnExit.IsClicked) _currentGameState = GameState.Paused;
-                    _btnExit.Update(mouse);
+                    if (_btnMenu.IsClicked) _currentGameState = GameState.Menu;
+                    _btnMenu.Update(mouse);
                     break;
 
                 
@@ -149,22 +167,30 @@ namespace ZombieSurvival
             switch (_currentGameState)
             {
                 case GameState.Menu:
-                    _spriteBatch.Draw(Content.Load<Texture2D>("Images/zombie-survival"), new Rectangle(0, 0, _screenWidth, _screenHeight), Color.White);
+                    _spriteBatch.Draw(Content.Load<Texture2D>("Images/zombie-survival"), new Rectangle(0, 0, screenWidth, screenHeight), Color.White);
                     _btnPlay.Draw(_spriteBatch);
                     _btnOption.Draw(_spriteBatch);
                     _btnExit.Draw(_spriteBatch);
+                    _btnHighScore.Draw(_spriteBatch);
 
                     break;
 
                 case GameState.Playing:
-
+                    _spriteBatch.Draw(Content.Load<Texture2D>("Images/ThaGame"), new Rectangle(0, 0, screenWidth, screenHeight), Color.White);
+                    _btnMenu.Draw(_spriteBatch);
                     break;
 
                 case GameState.Options:
-
+                    _spriteBatch.Draw(Content.Load<Texture2D>("Images/Option"), new Rectangle(0, 0, screenWidth, screenHeight), Color.White);
+                    _btnMenu.Draw(_spriteBatch);
                     break;
 
-                case GameState.Paused:
+                case GameState.HighScore:
+                    _spriteBatch.Draw(Content.Load<Texture2D>("Images/HighScore"), new Rectangle(0, 0, screenWidth, screenHeight), Color.White);
+                   _btnMenu.Draw(_spriteBatch);
+                    break;
+
+               case GameState.Paused:
 
                     break;
 
