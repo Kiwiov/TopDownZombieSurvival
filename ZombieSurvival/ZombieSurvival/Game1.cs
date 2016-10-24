@@ -1,8 +1,11 @@
 ﻿using System.Net.Mime;
+using System.Security.Policy;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using static System.Net.Mime.MediaTypeNames;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 
 namespace ZombieSurvival
 {
@@ -20,7 +23,6 @@ namespace ZombieSurvival
             Options,
             Playing,
             HighScore,
-            Exit,
             Paused
         }
          GameState _currentGameState = GameState.Menu;
@@ -28,6 +30,9 @@ namespace ZombieSurvival
         // Screen Adjustments
         readonly int screenWidth = 1920;
         readonly int screenHeight = 1200;
+
+        // Sound
+        private Song song;
 
         private CButton _btnPlay;
         private CButton _btnOption;
@@ -81,6 +86,11 @@ namespace ZombieSurvival
             _btnHighScore.SetPosition(new Vector2(1200, 1000));
             _btnMenu = new CButton(Content.Load<Texture2D>("Images/Button"), _graphics.GraphicsDevice);
             _btnMenu.SetPosition(new Vector2(100, 1100));
+
+            song = Content.Load<Song>("Audio/ScaryBgMusic");
+
+            MediaPlayer.Play(song);
+            MediaPlayer.IsRepeating = true;
         }
 
         /// <summary>
@@ -119,11 +129,11 @@ namespace ZombieSurvival
                     _btnExit.Update(mouse);
                     if (_btnHighScore.IsClicked) _currentGameState = GameState.HighScore;
                     _btnHighScore.Update(mouse);
+                    
                     break;
 
                 case GameState.Playing:
-                    if (_btnPlay.IsClicked) _currentGameState = GameState.Paused;
-                    _btnPlay.Update(mouse);
+                    
                     if (_btnMenu.IsClicked) _currentGameState = GameState.Menu;
                     _btnMenu.Update(mouse);
                     break;
@@ -172,17 +182,20 @@ namespace ZombieSurvival
                     _btnOption.Draw(_spriteBatch);
                     _btnExit.Draw(_spriteBatch);
                     _btnHighScore.Draw(_spriteBatch);
-
+                    MediaPlayer.Resume();
+                    
                     break;
 
                 case GameState.Playing:
                     _spriteBatch.Draw(Content.Load<Texture2D>("Images/ThaGame"), new Rectangle(0, 0, screenWidth, screenHeight), Color.White);
                     _btnMenu.Draw(_spriteBatch);
+                    MediaPlayer.Pause();
                     break;
 
                 case GameState.Options:
                     _spriteBatch.Draw(Content.Load<Texture2D>("Images/Option"), new Rectangle(0, 0, screenWidth, screenHeight), Color.White);
                     _btnMenu.Draw(_spriteBatch);
+                    
                     break;
 
                 case GameState.HighScore:

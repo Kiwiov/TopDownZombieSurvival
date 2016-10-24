@@ -91,3 +91,9 @@
 /processorParam:TextureFormat=Color
 /build:Images/HighScore.png
 
+#begin Audio/ScaryBgMusic.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Audio/ScaryBgMusic.mp3
+
