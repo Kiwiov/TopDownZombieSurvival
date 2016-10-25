@@ -13,6 +13,7 @@ namespace ZombieSurvival
         Texture2D tileset;
         public List<Rectangle> playerMapHitBoxes = new List<Rectangle>();
         public List<Rectangle> mapHitBoxes = new List<Rectangle>();
+        public List<Rectangle> spawnZones = new List<Rectangle>();
         private bool hitBoxesRegistered = false;
 
         int tileWidth;
@@ -65,7 +66,7 @@ namespace ZombieSurvival
             }
         }
 
-        public void RegHitBoxes()
+        public void FindHitBoxes()
         {
             for (var i = 0; i < map.Layers[1].Tiles.Count; i++)
             {
@@ -91,6 +92,23 @@ namespace ZombieSurvival
                     {
                         mapHitBoxes.Add(new Rectangle((int)x, (int)y, tileWidth, tileHeight));
                     }
+                }
+            }
+        }
+
+        public void FindSpawnZones()
+        {
+            for (var i = 0; i < map.Layers[0].Tiles.Count; i++)
+            {
+                int gid = map.Layers[0].Tiles[i].Gid;
+
+                // Empty tile, do nothing
+                if (gid == 28)
+                {
+                    float x = (i % map.Width) * map.TileWidth;
+                    float y = (float)Math.Floor(i / (double)map.Width) * map.TileHeight;
+
+                    spawnZones.Add(new Rectangle((int)x, (int)y, tileWidth, tileHeight));
                 }
             }
         }

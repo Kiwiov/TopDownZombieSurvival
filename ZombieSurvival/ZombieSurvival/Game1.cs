@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
@@ -19,6 +20,7 @@ namespace ZombieSurvival
         SpriteBatch spriteBatch;
         TileEngineGood tileEngineGood;
         TmxMap map;
+        ZombieManager zombieManager;
         Camera cam;
 
         Texture2D character;
@@ -36,7 +38,6 @@ namespace ZombieSurvival
         Vector2 mousePosition;
         
         List<Bullet> shots;
-        List<Zombie> zombies;
 
         Song bSong;
         SoundEffect shot;
@@ -45,6 +46,12 @@ namespace ZombieSurvival
         float stamina;
         float playerHitBoxRadius;
         
+
+        MouseState ms;
+        MouseState previousMs;
+
+        PathFinder finder;
+
         public Game1()
         {
             
@@ -59,30 +66,34 @@ namespace ZombieSurvival
         
         protected override void Initialize()
         {
-            position = new Vector2(2100,1900);
+            position = new Vector2(2368,1800);
             previusPosition = position;
             cam = new Camera();
             mousePosition = new Vector2();
             base.Initialize();
             playerHitBoxRadius = 25;
             shots = new List<Bullet>();
-            zombies = new List<Zombie>();
+            
         }
 
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            map = new TmxMap("house.tmx");
+            map = new TmxMap("forest.tmx");
             tileEngineGood = new TileEngineGood(map);
             tileEngineGood.LoadContent(this);
-            tileEngineGood.RegHitBoxes();
+            tileEngineGood.FindHitBoxes();
+            tileEngineGood.FindSpawnZones();
+            int temp = tileEngineGood.spawnZones.Count;
+
+            finder = new PathFinder(map);
+
+            zombieManager = new ZombieManager(Content.Load<Texture2D>("zoimbie1_stand"), Content.Load<Texture2D>("zoimbie1_hold"), Content.Load<Texture2D>("zombie2_stand"), Content.Load<Texture2D>("zombie2_hold"), tileEngineGood);
+            zombieManager.SpawnZombies();
+            
             character = Content.Load<Texture2D>("hitman2_gun");
             bullet = Content.Load<Texture2D>("bullet");
             curs = Content.Load<Texture2D>("crshair_36px");
-            zombieTextureOne = Content.Load<Texture2D>("zoimbie1_stand");
-            zombieTextureTwo = Content.Load<Texture2D>("zombie2_stand");
-            zombieTextureOneAttack = Content.Load<Texture2D>("zoimbie1_hold");
-            zombieTextureTwoAttack = Content.Load<Texture2D>("zombie2_hold");
             bSong = Content.Load<Song>("bsong");
             shot = Content.Load<SoundEffect>("KiaGun");
             //MediaPlayer.Play(bSong);
@@ -95,35 +106,25 @@ namespace ZombieSurvival
 
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
+            zombieManager.MoveZombie(finder, position);
 
-            GamePadCapabilities c = GamePad.GetCapabilities(PlayerIndex.One);
-            if (c.IsConnected)
+            if (zombieManager.zombies.Count == 0)
             {
-                GamePadState state = GamePad.GetState(PlayerIndex.One);
-                if (c.HasLeftXThumbStick)
-                {
-                    position.X += state.ThumbSticks.Left.X * 10.0f;
-                }
-                if (c.GamePadType == GamePadType.GamePad)
-                {
-                    if (state.IsButtonDown(Buttons.A))
-                    {
-                        Exit();
-                    }
-                }
+                zombieManager.round++;
+                zombieManager.SpawnZombies();
             }
-
+      
             KeyboardState kb = Keyboard.GetState();
 
-            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+            previousMs = ms;
+            ms = Mouse.GetState();
+            
+            if (ms.LeftButton == ButtonState.Pressed && previousMs.LeftButton == ButtonState.Released)
             {
                 shot.Play();
-                shots.Add(new Bullet(bullet, position, new Vector2(5 * (float)Math.Cos(rot), 5 * (float)Math.Sin(rot)),rot));
+                shots.Add(new Bullet(bullet, position, new Vector2(25 * (float)Math.Cos(rot), 25 * (float)Math.Sin(rot)), rot));
             }
-            //Kia was here I saw nothing
+            
             
             foreach (var bullet in shots)
             {
@@ -141,8 +142,7 @@ namespace ZombieSurvival
                 }
             }
 
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
+            #region Movemente
             
             if ((kb.IsKeyDown(Keys.LeftShift) || kb.IsKeyDown(Keys.RightShift)) && stamina > 0)
             {
@@ -328,7 +328,9 @@ namespace ZombieSurvival
                     }
                 }
             }
-            
+#endregion
+
+
             cam.Pos = position;
             mousePos = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
             mousePosition = new Vector2(mousePos.X, mousePos.Y) + cam.pos - new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight / 2);
@@ -398,7 +400,8 @@ namespace ZombieSurvival
                                 null,
                                 cam.get_transformation(GraphicsDevice));
             spriteBatch.Draw(character, position, null, color: Color.White, rotation: rot, origin: new Vector2(character.Bounds.Center.X, character.Bounds.Center.Y));
-            spriteBatch.Draw(curs, mousePosition, Color.GreenYellow);
+            zombieManager.Draw(spriteBatch);
+            spriteBatch.Draw(curs, mousePosition, null, color: Color.RoyalBlue, rotation: 0, origin: new Vector2(curs.Bounds.Center.X, curs.Bounds.Center.Y));
             foreach (var shot in shots)
             {
                 spriteBatch.Draw(shot.texture, shot.position, null, color: Color.White, rotation: shot.rotation + (float)Math.PI, origin: new Vector2(shot.texture.Bounds.Center.X, shot.texture.Bounds.Center.Y));

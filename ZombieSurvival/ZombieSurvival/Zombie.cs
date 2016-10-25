@@ -8,15 +8,17 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ZombieSurvival
 {
-    class Zombie
+    public class Zombie
     {
         public Texture2D texture;
+        public Texture2D textureAttack;
         public Vector2 position;
         public Vector2 speed;
         public float rotation;
-        public Zombie(Texture2D Texture, Vector2 Position, Vector2 Speed, float Rotation)
+        public Zombie(Texture2D Texture, Texture2D TextureAttack, Vector2 Position, Vector2 Speed, float Rotation)
         {
             texture = Texture;
+            textureAttack = TextureAttack;
             position = Position;
             speed = Speed;
             rotation = Rotation;
