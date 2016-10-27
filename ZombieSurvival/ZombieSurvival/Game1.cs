@@ -44,6 +44,7 @@ namespace ZombieSurvival
 
         float rot;
         float stamina;
+        
         float playerHitBoxRadius;
         
 
@@ -73,7 +74,6 @@ namespace ZombieSurvival
             base.Initialize();
             playerHitBoxRadius = 25;
             shots = new List<Bullet>();
-            
         }
 
         protected override void LoadContent()
@@ -96,7 +96,7 @@ namespace ZombieSurvival
             curs = Content.Load<Texture2D>("crshair_36px");
             bSong = Content.Load<Song>("bsong");
             shot = Content.Load<SoundEffect>("KiaGun");
-            //MediaPlayer.Play(bSong);
+            MediaPlayer.Play(bSong);
             MediaPlayer.IsRepeating = true;
         }
 
@@ -106,7 +106,9 @@ namespace ZombieSurvival
 
         protected override void Update(GameTime gameTime)
         {
-            zombieManager.MoveZombie(finder, position);
+            
+                zombieManager.MoveZombie(finder, position);
+            
 
             if (zombieManager.zombies.Count == 0)
             {

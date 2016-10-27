@@ -9,7 +9,7 @@ namespace ZombieSurvival
     public class PathFinder
     {
         public Astar.Node[,] MapData { get; private set; }
-        public int SizeX { get { return MapData.GetLength(1); } }
+        public int SizeX { get { return MapData.GetLength(1);} }
         public int SizeY { get { return MapData.GetLength(0); } }
 
         private readonly List<Astar.Node> _openNodes = new List<Astar.Node>();
@@ -76,6 +76,7 @@ namespace ZombieSurvival
             MapData[_startY, _startX].Type = Astar.MapType.Start;
             MapData[_goalY, _goalX].Type = Astar.MapType.Stop;
             list.Reverse();
+            list.Add(MapData[_goalY, _goalX]);
             return list;
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
@@ -13,6 +14,7 @@ namespace ZombieSurvival
         Random ran = new Random();
         public List<Zombie> zombies = new List<Zombie>();
         PathFinder finder;
+        Vector2 dPos;
 
         Texture2D zombieTextureStandingOne;
         Texture2D zombieTextureAttackingOne;
@@ -36,31 +38,72 @@ namespace ZombieSurvival
         {
             foreach (var zomb in zombies)
             {
-                finder.SetStart((int)(zomb.position.X / 64), (int)(zomb.position.Y / 64));
-                finder.SetStop((int)(character.X / 64), (int)(character.Y / 64));
-                finder.MoveFromTo();
-                var list = finder.PlotRoute();
-
-                if(list == null || list.Count == 0)
+                if (zomb.delay == 20)
+                {
+                    zomb.delay = 0;
+                    finder.SetStart((int)(zomb.position.X / 64), (int)(zomb.position.Y / 64));
+                    finder.SetStop((int)(character.X / 64), (int)(character.Y / 64));
+                    finder.MoveFromTo();
+                    zomb.nodes = finder.PlotRoute();
+                }
+                else
+                {
+                    zomb.delay++;
+                }
+                if (zomb.nodes == null || zomb.nodes.Count == 0)
+                {
                     continue;
+                }
 
-                if ((list[0].X + 32) * 64 > zomb.position.X)
+                if (zomb.nodes[0].X * 64 + 32 > zomb.position.X && zomb.nodes[0].Y * 64 + 32 < zomb.position.Y)
+                {
+                    zomb.position.X += 2.1213203435596425732025330863145f;
+                    zomb.position.Y -= 2.1213203435596425732025330863145f;
+                    zomb.rotation = 45;
+                }
+                else if (zomb.nodes[0].X * 64 + 32 < zomb.position.X && zomb.nodes[0].Y * 64 + 32 < zomb.position.Y)
+                {
+                    zomb.position.X -= 2.1213203435596425732025330863145f;
+                    zomb.position.Y -= 2.1213203435596425732025330863145f;
+                    zomb.rotation = 315;
+                }
+                else if (zomb.nodes[0].X * 64 + 32 > zomb.position.X && zomb.nodes[0].Y * 64 + 32 > zomb.position.Y)
+                {
+                    zomb.position.X += 2.1213203435596425732025330863145f;
+                    zomb.position.Y += 2.1213203435596425732025330863145f;
+                    zomb.rotation = 135;
+                }
+                else if (zomb.nodes[0].X * 64 + 32 < zomb.position.X && zomb.nodes[0].Y * 64 + 32 > zomb.position.Y)
+                {
+                    zomb.position.X -= 2.1213203435596425732025330863145f;
+                    zomb.position.Y += 2.1213203435596425732025330863145f;
+                    zomb.rotation = 225;
+                }
+                else if (zomb.nodes[0].X * 64 + 32 > zomb.position.X)
                 {
                     zomb.position.X += 3;
+                    zomb.rotation = 90;
                 }
-                else if ((list[0].X + 32) *64 < zomb.position.X)
+
+                else if (zomb.nodes[0].X * 64 + 32 < zomb.position.X)
                 {
                     zomb.position.X -= 3;
+                    zomb.rotation = 270;
                 }
-                if ((list[0].Y + 32) *64 > zomb.position.Y)
+
+                else if (zomb.nodes[0].Y * 64 + 32 > zomb.position.Y)
                 {
                     zomb.position.Y += 3;
+                    zomb.rotation = 180;
                 }
-                else if ((list[0].Y + 32) *64 < zomb.position.Y)
+
+                else if (zomb.nodes[0].Y * 64 + 32 < zomb.position.Y)
                 {
                     zomb.position.Y -= 3;
+                    zomb.rotation = 0;
                 }
-                
+                dPos = character - zomb.position;
+                zomb.rotation = (float)Math.Atan2(dPos.Y, dPos.X);
             }
         }
 
