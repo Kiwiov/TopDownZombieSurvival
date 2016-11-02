@@ -17,7 +17,8 @@ namespace ZombieSurvival
         public float rotation;
         public float delay;
         public List<Astar.Node> nodes;
-
+        public Vector2 range;
+            
         public Zombie(Texture2D Texture, Texture2D TextureAttack, Vector2 Position, Vector2 Speed, float Rotation)
         {
             texture = Texture;

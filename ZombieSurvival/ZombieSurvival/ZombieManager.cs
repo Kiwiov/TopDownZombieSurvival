@@ -112,6 +112,12 @@ namespace ZombieSurvival
             GetSpawningTiles();
             CalculateZombies();
         }
+
+        public void KillAllZombies()
+        {
+            zombies.Clear();
+        }
+
         private void GetSpawningTiles()
         {
             foreach (var spawn in tileEngine.spawnZones)

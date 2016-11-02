@@ -144,9 +144,15 @@ namespace ZombieSurvival
                 }
             }
 
-            #region Movemente
-            
-            if ((kb.IsKeyDown(Keys.LeftShift) || kb.IsKeyDown(Keys.RightShift)) && stamina > 0)
+            if (kb.IsKeyDown(Keys.Enter))
+            {
+                zombieManager.KillAllZombies();
+            }
+
+
+                #region Movemente
+
+                if ((kb.IsKeyDown(Keys.LeftShift) || kb.IsKeyDown(Keys.RightShift)) && stamina > 0)
             {
                 
                 if ((kb.IsKeyDown(Keys.A) || kb.IsKeyDown(Keys.Left)) && (kb.IsKeyDown(Keys.W) || kb.IsKeyDown(Keys.Up)))
