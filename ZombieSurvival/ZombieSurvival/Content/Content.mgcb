@@ -133,3 +133,9 @@
 /processorParam:TextureFormat=Color
 /build:zoimbie1_hold.png
 
+#begin pistolShot.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:pistolShot.ogg
+

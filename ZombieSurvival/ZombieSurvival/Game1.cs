@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -95,8 +96,8 @@ namespace ZombieSurvival
             bullet = Content.Load<Texture2D>("bullet");
             curs = Content.Load<Texture2D>("crshair_36px");
             bSong = Content.Load<Song>("bsong");
-            shot = Content.Load<SoundEffect>("KiaGun");
-            MediaPlayer.Play(bSong);
+            shot = Content.Load<SoundEffect>("pistolShot");
+            //MediaPlayer.Play(bSong);
             MediaPlayer.IsRepeating = true;
         }
 
@@ -106,34 +107,61 @@ namespace ZombieSurvival
 
         protected override void Update(GameTime gameTime)
         {
-            
-                zombieManager.MoveZombie(finder, position);
-            
+
+            zombieManager.MoveZombie(finder, position);
+
 
             if (zombieManager.zombies.Count == 0)
             {
                 zombieManager.round++;
+                zombieManager.CalculateZombies();
+                Debug.WriteLine("Round: " + zombieManager.round);
+                Debug.WriteLine("Zombies: " + zombieManager.zombiesToSpawn);
+                zombieManager.SpawnZombies();
+                
+                
+            }
+
+            if (zombieManager.zombiesToSpawn > 0)
+            {
                 zombieManager.SpawnZombies();
             }
-      
+
             KeyboardState kb = Keyboard.GetState();
 
             previousMs = ms;
             ms = Mouse.GetState();
-            
-            if (ms.LeftButton == ButtonState.Pressed && previousMs.LeftButton == ButtonState.Released)
+
+            if (ms.LeftButton == ButtonState.Pressed && previousMs.LeftButton != ms.LeftButton )
             {
                 shot.Play();
-                shots.Add(new Bullet(bullet, position, new Vector2(25 * (float)Math.Cos(rot), 25 * (float)Math.Sin(rot)), rot));
-            }
-            
-            
-            foreach (var bullet in shots)
-            {
-                bullet.position += bullet.speed;
+                shots.Add(new Bullet(bullet, position, new Vector2(25*(float) Math.Cos(rot), 25*(float) Math.Sin(rot)),
+                    rot));
             }
 
-            foreach (var hitbox in tileEngineGood.mapHitBoxes)
+
+            foreach (var bullet in shots)
+            {
+                bullet.position.X += (int)bullet.speed.X;
+                bullet.position.Y += (int)bullet.speed.Y;
+                bullet.hitbox.X = (int) bullet.position.X - bullet.texture.Width / 2;
+                bullet.hitbox.Y = (int) bullet.position.Y - bullet.texture.Height / 2;
+            }
+
+            for (int e = 0; e < zombieManager.zombies.Count; e++)
+            {
+                for (int i = 0; i < shots.Count; i++)
+                {
+                    if (shots.Count > 0 && zombieManager.zombies[e].hitbox.Contains(shots[i].position))
+                    {
+                        zombieManager.zombies.RemoveAt(e);
+                        shots.Remove(shots[i]);
+                        break;
+                    }
+                }
+            }
+
+        foreach (var hitbox in tileEngineGood.mapHitBoxes)
             {
                 for (int i = 0; i < shots.Count; i++)
                 {
@@ -147,6 +175,7 @@ namespace ZombieSurvival
             if (kb.IsKeyDown(Keys.Enter))
             {
                 zombieManager.KillAllZombies();
+                //zombieManager.KillOneZombie();
             }
 
 
@@ -398,7 +427,7 @@ namespace ZombieSurvival
                                 null,
                                 cam.get_transformation(GraphicsDevice));
             tileEngineGood.Draw(spriteBatch);
-            
+           
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred,
                                 BlendState.AlphaBlend,
