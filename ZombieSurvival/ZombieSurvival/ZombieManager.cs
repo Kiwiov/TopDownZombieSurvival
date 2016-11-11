@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 namespace ZombieSurvival
 {
@@ -21,18 +22,24 @@ namespace ZombieSurvival
         Texture2D zombieTextureAttackingOne;
         Texture2D zombieTextureStandingTwo;
         Texture2D zombieTextureAttackingTwo;
-
+        
         TileEngineGood tileEngine;
         
         Vector2 spawnPoint;
         List<Rectangle> spawnpoints = new List<Rectangle>();
-        public ZombieManager(Texture2D ZombieTextureStandingOne, Texture2D ZombieTextureAttackingOne, Texture2D ZombieTextureStandingTwo, Texture2D ZombieTextureAttackingTwo, TileEngineGood TileEngine)
+        List<SoundEffect> groans = new List<SoundEffect>();
+
+        public ZombieManager(Texture2D ZombieTextureStandingOne, Texture2D ZombieTextureAttackingOne, Texture2D ZombieTextureStandingTwo, Texture2D ZombieTextureAttackingTwo, TileEngineGood TileEngine, SoundEffect Groan1, SoundEffect Groan2, SoundEffect Groan3, SoundEffect Groan4)
         {
             zombieTextureStandingOne = ZombieTextureStandingOne;
             zombieTextureAttackingOne = ZombieTextureAttackingOne;
             zombieTextureStandingTwo = ZombieTextureStandingTwo;
             zombieTextureAttackingTwo = ZombieTextureAttackingTwo;
             tileEngine = TileEngine;
+            groans.Add(Groan1);
+            groans.Add(Groan2);
+            groans.Add(Groan3);
+            groans.Add(Groan4);
         }
 
         public void MoveZombie(PathFinder finder, Vector2 character)
@@ -123,11 +130,11 @@ namespace ZombieSurvival
 
                 if (ran.Next(1, 3) == 2)
                 {
-                    zombies.Add(new Zombie(zombieTextureStandingOne, zombieTextureAttackingOne, spawnPoint, new Vector2(0, 0), 0));
+                    zombies.Add(new Zombie(zombieTextureStandingOne, zombieTextureAttackingOne, spawnPoint, new Vector2(0, 0), 0, groans));
                 }
                 else
                 {
-                    zombies.Add(new Zombie(zombieTextureStandingTwo, zombieTextureAttackingTwo, spawnPoint, new Vector2(0, 0), 0));
+                    zombies.Add(new Zombie(zombieTextureStandingTwo, zombieTextureAttackingTwo, spawnPoint, new Vector2(0, 0), 0, groans));
                 }
             }
         }
@@ -150,9 +157,36 @@ namespace ZombieSurvival
                 spawnpoints.Add(spawn);
             }
         }
+
         public void CalculateZombies()
         {
                 zombiesToSpawn = (int)(350 - 350 * Math.Pow(2, -0.008 * round));
+        }
+
+        public void ToGroanOrNotToGroan()
+        {
+            foreach (var zomb in zombies)
+            {
+                int rando = ran.Next(40);
+
+                if (rando == 1)
+                {
+                    zomb.groans[0].Play();
+                }
+                else if (rando == 2)
+                {
+                    zomb.groans[1].Play();
+                }
+                else if (rando == 3)
+                {
+                    zomb.groans[2].Play();
+                }
+                else if (rando == 4)
+                {
+                    zomb.groans[3].Play();
+                }
+            }
+            
         }
 
         public void Draw(SpriteBatch spriteBatch)

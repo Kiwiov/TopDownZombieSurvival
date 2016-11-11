@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace ZombieSurvival
@@ -20,7 +21,10 @@ namespace ZombieSurvival
         public Vector2 range;
         public float health = 100;
         public Rectangle hitbox;
-        public Zombie(Texture2D Texture, Texture2D TextureAttack, Vector2 Position, Vector2 Speed, float Rotation)
+
+        public List<SoundEffect> groans;
+
+        public Zombie(Texture2D Texture, Texture2D TextureAttack, Vector2 Position, Vector2 Speed, float Rotation, List<SoundEffect> Groans)
         {
             texture = Texture;
             textureAttack = TextureAttack;
@@ -28,6 +32,7 @@ namespace ZombieSurvival
             speed = Speed;
             rotation = Rotation;
             hitbox = new Rectangle((int)position.X - texture.Width / 2,(int)position.Y - texture.Height / 2,43,43);
+            groans = Groans;
         }
     }
 }

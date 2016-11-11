@@ -145,7 +145,7 @@ namespace ZombieSurvival
             var dx = Math.Abs(x1 - x2);
             var dy = Math.Abs(y1 - y2);
             if ((dx + dy) == 2)
-                return 14;
+                return 20;
             if ((dx + dy) == 1)
                 return 10;
             return 0;

@@ -37,7 +37,7 @@ namespace ZombieSurvival
         Vector2 dPos;
         Vector2 mousePos;
         Vector2 mousePosition;
-        
+
         List<Bullet> shots;
 
         Song bSong;
@@ -45,9 +45,10 @@ namespace ZombieSurvival
 
         float rot;
         float stamina;
-        
         float playerHitBoxRadius;
-        
+
+        int timeBetweenRounds;
+        int timeBetweenRoundsTime;
 
         MouseState ms;
         MouseState previousMs;
@@ -56,31 +57,32 @@ namespace ZombieSurvival
 
         public Game1()
         {
-            
+
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             graphics.PreferredBackBufferHeight = 1080;
             graphics.PreferredBackBufferWidth = 1920;
-            
+
             //graphics.IsFullScreen = true;
         }
 
-        
+
         protected override void Initialize()
         {
-            position = new Vector2(2368,1800);
+            position = new Vector2(2000, 1800);
             previusPosition = position;
             cam = new Camera();
             mousePosition = new Vector2();
             base.Initialize();
             playerHitBoxRadius = 25;
             shots = new List<Bullet>();
+            timeBetweenRounds = 10;
         }
 
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            map = new TmxMap("forest.tmx");
+            map = new TmxMap("warehouse.tmx");
             tileEngineGood = new TileEngineGood(map);
             tileEngineGood.LoadContent(this);
             tileEngineGood.FindHitBoxes();
@@ -89,16 +91,21 @@ namespace ZombieSurvival
 
             finder = new PathFinder(map);
 
-            zombieManager = new ZombieManager(Content.Load<Texture2D>("zoimbie1_stand"), Content.Load<Texture2D>("zoimbie1_hold"), Content.Load<Texture2D>("zombie2_stand"), Content.Load<Texture2D>("zombie2_hold"), tileEngineGood);
+            zombieManager = new ZombieManager(Content.Load<Texture2D>("zoimbie1_stand"), Content.Load<Texture2D>("zoimbie1_hold"), Content.Load<Texture2D>("zombie2_stand"), Content.Load<Texture2D>("zombie2_hold"), tileEngineGood, Content.Load<SoundEffect>("Zombie_groan1"), Content.Load<SoundEffect>("Zombie_groan2"), Content.Load<SoundEffect>("Zombie_groan3"), Content.Load<SoundEffect>("Zombie_groan4"));
             zombieManager.SpawnZombies();
-            
+
             character = Content.Load<Texture2D>("hitman2_gun");
             bullet = Content.Load<Texture2D>("bullet");
             curs = Content.Load<Texture2D>("crshair_36px");
+
             bSong = Content.Load<Song>("bsong");
+
             shot = Content.Load<SoundEffect>("pistolShot");
+
             //MediaPlayer.Play(bSong);
             MediaPlayer.IsRepeating = true;
+
+
         }
 
         protected override void UnloadContent()
@@ -113,29 +120,41 @@ namespace ZombieSurvival
 
             if (zombieManager.zombies.Count == 0)
             {
-                zombieManager.round++;
-                zombieManager.CalculateZombies();
-                Debug.WriteLine("Round: " + zombieManager.round);
-                Debug.WriteLine("Zombies: " + zombieManager.zombiesToSpawn);
-                zombieManager.SpawnZombies();
-                
-                
+                if (timeBetweenRoundsTime == timeBetweenRounds * 60)
+                {
+                    zombieManager.round++;
+                    zombieManager.CalculateZombies();
+                    Debug.WriteLine("Round: " + zombieManager.round);
+                    Debug.WriteLine("Zombies: " + zombieManager.zombiesToSpawn);
+                    zombieManager.SpawnZombies();
+                    timeBetweenRoundsTime = 0;
+                }
+                else
+                {
+                    timeBetweenRoundsTime++;
+                }
             }
+            
+
 
             if (zombieManager.zombiesToSpawn > 0)
             {
                 zombieManager.SpawnZombies();
             }
 
+
+            zombieManager.ToGroanOrNotToGroan();
+
+
             KeyboardState kb = Keyboard.GetState();
 
             previousMs = ms;
             ms = Mouse.GetState();
 
-            if (ms.LeftButton == ButtonState.Pressed && previousMs.LeftButton != ms.LeftButton )
+            if (ms.LeftButton == ButtonState.Pressed && previousMs.LeftButton != ms.LeftButton)
             {
                 shot.Play();
-                shots.Add(new Bullet(bullet, position, new Vector2(25*(float) Math.Cos(rot), 25*(float) Math.Sin(rot)),
+                shots.Add(new Bullet(bullet, position, new Vector2(25 * (float)Math.Cos(rot), 25 * (float)Math.Sin(rot)),
                     rot));
             }
 
@@ -144,8 +163,8 @@ namespace ZombieSurvival
             {
                 bullet.position.X += (int)bullet.speed.X;
                 bullet.position.Y += (int)bullet.speed.Y;
-                bullet.hitbox.X = (int) bullet.position.X - bullet.texture.Width / 2;
-                bullet.hitbox.Y = (int) bullet.position.Y - bullet.texture.Height / 2;
+                bullet.hitbox.X = (int)bullet.position.X - bullet.texture.Width / 2;
+                bullet.hitbox.Y = (int)bullet.position.Y - bullet.texture.Height / 2;
             }
 
             for (int e = 0; e < zombieManager.zombies.Count; e++)
@@ -154,14 +173,28 @@ namespace ZombieSurvival
                 {
                     if (shots.Count > 0 && zombieManager.zombies[e].hitbox.Contains(shots[i].position))
                     {
-                        zombieManager.zombies.RemoveAt(e);
-                        shots.Remove(shots[i]);
-                        break;
+                        if (shots[i].penetration > 0)
+                        {
+                            shots[i].penetration--;
+                            zombieManager.zombies[e].health -= shots[i].damage;
+                            if (zombieManager.zombies[e].health <= 0)
+                            {
+                                foreach (var groan in zombieManager.zombies[e].groans)
+                                {
+                                    groan.Dispose();
+                                }
+                                zombieManager.zombies.RemoveAt(e);
+                            }
+                        }
+                        else
+                        {
+                            shots.Remove(shots[i]);
+                        }
                     }
                 }
             }
 
-        foreach (var hitbox in tileEngineGood.mapHitBoxes)
+            foreach (var hitbox in tileEngineGood.mapHitBoxes)
             {
                 for (int i = 0; i < shots.Count; i++)
                 {
@@ -179,11 +212,11 @@ namespace ZombieSurvival
             }
 
 
-                #region Movemente
+            #region Movemente
 
-                if ((kb.IsKeyDown(Keys.LeftShift) || kb.IsKeyDown(Keys.RightShift)) && stamina > 0)
+            if ((kb.IsKeyDown(Keys.LeftShift) || kb.IsKeyDown(Keys.RightShift)) && stamina > 0)
             {
-                
+
                 if ((kb.IsKeyDown(Keys.A) || kb.IsKeyDown(Keys.Left)) && (kb.IsKeyDown(Keys.W) || kb.IsKeyDown(Keys.Up)))
                 {
                     if (MapHitBoxHit("x") != "left")
@@ -365,7 +398,7 @@ namespace ZombieSurvival
                     }
                 }
             }
-#endregion
+            #endregion
 
 
             cam.Pos = position;
@@ -410,7 +443,7 @@ namespace ZombieSurvival
                         }
                     }
                 }
-                
+
             }
             return "none";
         }
@@ -427,7 +460,7 @@ namespace ZombieSurvival
                                 null,
                                 cam.get_transformation(GraphicsDevice));
             tileEngineGood.Draw(spriteBatch);
-           
+
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred,
                                 BlendState.AlphaBlend,

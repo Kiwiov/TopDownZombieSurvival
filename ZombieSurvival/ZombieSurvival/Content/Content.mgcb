@@ -139,3 +139,27 @@
 /processorParam:Quality=Best
 /build:pistolShot.ogg
 
+#begin Zombie_groan1.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Zombie_groan1.ogg
+
+#begin Zombie_groan2.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Zombie_groan2.ogg
+
+#begin Zombie_groan3.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Zombie_groan3.ogg
+
+#begin Zombie_groan4.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Zombie_groan4.ogg
+
