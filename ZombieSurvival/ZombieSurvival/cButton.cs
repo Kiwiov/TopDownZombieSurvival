@@ -11,56 +11,56 @@ namespace ZombieSurvival
 {
     class CButton
     {
-        Texture2D _texture;
-        Vector2 _position;
-        Rectangle _rectangle;
+        Texture2D texture;
+        Vector2 position;
+        Rectangle rectangle;
 
-        Color _colour = new Color(255, 255, 255, 255);
+        Color colour = new Color(255, 255, 255, 255);
 
-        private Vector2 _size;
+        private Vector2 size;
 
         public CButton(Texture2D newTexture, GraphicsDevice graphics)
         {
-            _texture = newTexture;
+            texture = newTexture;
 
             // ScreenW = 1920, ScreenH = 1080
             // ImgW    = 500, ImgH    = 100
-            _size = new Vector2(graphics.Viewport.Width / 8, graphics.Viewport.Height / 30);
+            size = new Vector2(graphics.Viewport.Width / 8, graphics.Viewport.Height / 30);
         }
 
-        bool _down;
+        bool down;
         public bool IsClicked;
 
         public void Update(MouseState mouse)
         {
-            _rectangle = new Rectangle((int)_position.X, (int)_position.Y,
-            (int)_size.X, (int)_size.Y);
+            rectangle = new Rectangle((int)position.X, (int)position.Y,
+            (int)size.X, (int)size.Y);
 
             Rectangle mouseRectangle = new Rectangle(mouse.X, mouse.Y, 1, 1);
 
-            if (mouseRectangle.Intersects(_rectangle))
+            if (mouseRectangle.Intersects(rectangle))
             {
-                if (_colour.A == 255) _down = false;
-                if (_colour.A == 0) _down = true;
-                if (_down) _colour.A += 3;
-                else _colour.A -= 3;
+                if (colour.A == 255) down = false;
+                if (colour.A == 0) down = true;
+                if (down) colour.A += 3;
+                else colour.A -= 3;
                 if (mouse.LeftButton == ButtonState.Pressed) IsClicked = true;
             }
-            else if (_colour.A < 255)
+            else if (colour.A < 255)
             {
-                _colour.A += 3;
+                colour.A += 3;
                 IsClicked = false;
             }
         }
 
         public void SetPosition(Vector2 newPostion)
         {
-            _position = newPostion;
+            position = newPostion;
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_texture, _rectangle, _colour);
+            spriteBatch.Draw(texture, rectangle, colour);
         }
     }
 }
