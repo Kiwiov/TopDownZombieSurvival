@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Mime;
+using System.Security.Policy;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
@@ -12,11 +14,15 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using TiledSharp;
+using static System.Net.Mime.MediaTypeNames;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 
 namespace ZombieSurvival
 {
     public class Game1 : Microsoft.Xna.Framework.Game
     {
+        public static GameState GameState;
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         TileEngineGood tileEngineGood;
@@ -64,6 +70,8 @@ namespace ZombieSurvival
         {
 
             graphics = new GraphicsDeviceManager(this);
+            this.IsMouseVisible = true;
+
             Content.RootDirectory = "Content";
             graphics.PreferredBackBufferHeight = 1080;
             graphics.PreferredBackBufferWidth = 1920;
@@ -76,6 +84,8 @@ namespace ZombieSurvival
         {
             position = new Vector2(2000, 1800);
             previusPosition = position;
+            Components.Add(new MenuComponent(this));
+            Components.Add(new KeyboardComponent(this));
             cam = new Camera();
             mousePosition = new Vector2();
             base.Initialize();
@@ -124,7 +134,7 @@ namespace ZombieSurvival
 
         protected override void Update(GameTime gameTime)
         {
-
+                this.Exit();
             zombieManager.MoveZombie(finder, position);
             
             if (zombieManager.zombies.Count == 0)
@@ -487,7 +497,6 @@ namespace ZombieSurvival
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.TransparentBlack);
-
             spriteBatch.Begin(SpriteSortMode.Deferred,
                                 BlendState.AlphaBlend,
                                 SamplerState.PointClamp,
@@ -496,7 +505,6 @@ namespace ZombieSurvival
                                 null,
                                 cam.get_transformation(GraphicsDevice));
             tileEngineGood.Draw(spriteBatch);
-
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred,
                                 BlendState.AlphaBlend,
