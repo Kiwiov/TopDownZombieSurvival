@@ -40,6 +40,10 @@
   <ItemGroup>
     <Compile Include="CButton.cs" />
     <Compile Include="Game1.cs" />
+    <Compile Include="GameState.cs" />
+    <Compile Include="KeyboardComponent.cs" />
+    <Compile Include="MenuChoice.cs" />
+    <Compile Include="MenuComponent.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
