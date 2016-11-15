@@ -42,10 +42,15 @@ namespace ZombieSurvival
 
         Song bSong;
         SoundEffect shot;
+        SoundEffect hit;
+        SoundEffect dying;
 
         float rot;
         float stamina;
         float playerHitBoxRadius;
+        float health;
+        float timeTillHeal;
+        float healTime;
 
         int timeBetweenRounds;
         int timeBetweenRoundsTime;
@@ -76,18 +81,19 @@ namespace ZombieSurvival
             base.Initialize();
             playerHitBoxRadius = 25;
             shots = new List<Bullet>();
-            timeBetweenRounds = 10;
+            timeBetweenRounds = 3;
+            health = 100;
+            timeTillHeal = 5;
         }
 
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            map = new TmxMap("warehouse.tmx");
+            map = new TmxMap("forest.tmx");
             tileEngineGood = new TileEngineGood(map);
             tileEngineGood.LoadContent(this);
             tileEngineGood.FindHitBoxes();
             tileEngineGood.FindSpawnZones();
-            int temp = tileEngineGood.spawnZones.Count;
 
             finder = new PathFinder(map);
 
@@ -101,8 +107,12 @@ namespace ZombieSurvival
             bSong = Content.Load<Song>("bsong");
 
             shot = Content.Load<SoundEffect>("pistolShot");
+            hit = Content.Load<SoundEffect>("HitMarkerSound");
+            dying = Content.Load<SoundEffect>("DyingZombie");
+
 
             //MediaPlayer.Play(bSong);
+
             MediaPlayer.IsRepeating = true;
 
 
@@ -116,8 +126,7 @@ namespace ZombieSurvival
         {
 
             zombieManager.MoveZombie(finder, position);
-
-
+            
             if (zombieManager.zombies.Count == 0)
             {
                 if (timeBetweenRoundsTime == timeBetweenRounds * 60)
@@ -135,16 +144,41 @@ namespace ZombieSurvival
                 }
             }
             
-
-
             if (zombieManager.zombiesToSpawn > 0)
             {
                 zombieManager.SpawnZombies();
             }
 
-
             zombieManager.ToGroanOrNotToGroan();
 
+            if (zombieManager.ToAttackOrNotToAttack(position))
+            {
+                health -= zombieManager.zombies[0].damage;
+                healTime = 0;
+            }
+
+            if (timeTillHeal * 60 == healTime)
+            {
+                if (health >= 100)
+                {
+                    health = 100;
+                }
+                else
+                {
+                    health += 0.2f;
+                }
+            }
+            else
+            {
+                healTime++;
+            }
+
+            Debug.WriteLine(health);
+
+            if (health <= 0)
+            {
+                this.Exit();
+            }
 
             KeyboardState kb = Keyboard.GetState();
 
@@ -153,16 +187,15 @@ namespace ZombieSurvival
 
             if (ms.LeftButton == ButtonState.Pressed && previousMs.LeftButton != ms.LeftButton)
             {
-                shot.Play();
-                shots.Add(new Bullet(bullet, position, new Vector2(25 * (float)Math.Cos(rot), 25 * (float)Math.Sin(rot)),
+                shot.Play(0.05f,0,0);
+                shots.Add(new Bullet(bullet, position, new Vector2(10 * (float)Math.Cos(rot), 10 * (float)Math.Sin(rot)),
                     rot));
             }
 
 
             foreach (var bullet in shots)
             {
-                bullet.position.X += (int)bullet.speed.X;
-                bullet.position.Y += (int)bullet.speed.Y;
+                bullet.position += bullet.speed;
                 bullet.hitbox.X = (int)bullet.position.X - bullet.texture.Width / 2;
                 bullet.hitbox.Y = (int)bullet.position.Y - bullet.texture.Height / 2;
             }
@@ -175,13 +208,15 @@ namespace ZombieSurvival
                     {
                         if (shots[i].penetration > 0)
                         {
+                            hit.Play();
                             shots[i].penetration--;
                             zombieManager.zombies[e].health -= shots[i].damage;
                             if (zombieManager.zombies[e].health <= 0)
                             {
-                                foreach (var groan in zombieManager.zombies[e].groans)
+                                dying.Play();
+                                if (zombieManager._activeSounds.ContainsKey(zombieManager.zombies[e]))
                                 {
-                                    groan.Dispose();
+                                    zombieManager._activeSounds[zombieManager.zombies[e]].Stop();
                                 }
                                 zombieManager.zombies.RemoveAt(e);
                             }
@@ -190,6 +225,7 @@ namespace ZombieSurvival
                         {
                             shots.Remove(shots[i]);
                         }
+                        break;
                     }
                 }
             }

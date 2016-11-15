@@ -21,6 +21,9 @@ namespace ZombieSurvival
         public Vector2 range;
         public float health = 100;
         public Rectangle hitbox;
+        public bool attacking = false;
+        public float attackCoolDown;
+        public float damage = /*100*/ 33.5f;
 
         public List<SoundEffect> groans;
 

@@ -17,7 +17,7 @@ namespace ZombieSurvival
 
         public Camera()
         {
-            zoom = 1.0f;
+            zoom = 2f;
             rotation = 0.0f;
             pos = Vector2.Zero;
         }

@@ -163,3 +163,15 @@
 /processorParam:Quality=Best
 /build:Zombie_groan4.ogg
 
+#begin HitMarkerSound.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:HitMarkerSound.ogg
+
+#begin DyingZombie.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:DyingZombie.ogg
+

@@ -22,12 +22,14 @@ namespace ZombieSurvival
         Texture2D zombieTextureAttackingOne;
         Texture2D zombieTextureStandingTwo;
         Texture2D zombieTextureAttackingTwo;
-        
+
         TileEngineGood tileEngine;
-        
+
         Vector2 spawnPoint;
         List<Rectangle> spawnpoints = new List<Rectangle>();
         List<SoundEffect> groans = new List<SoundEffect>();
+
+        public Dictionary<Zombie, SoundEffectInstance> _activeSounds = new Dictionary<Zombie, SoundEffectInstance>();
 
         public ZombieManager(Texture2D ZombieTextureStandingOne, Texture2D ZombieTextureAttackingOne, Texture2D ZombieTextureStandingTwo, Texture2D ZombieTextureAttackingTwo, TileEngineGood TileEngine, SoundEffect Groan1, SoundEffect Groan2, SoundEffect Groan3, SoundEffect Groan4)
         {
@@ -160,40 +162,86 @@ namespace ZombieSurvival
 
         public void CalculateZombies()
         {
-                zombiesToSpawn = (int)(350 - 350 * Math.Pow(2, -0.008 * round));
+            zombiesToSpawn = (int)(350 - 350 * Math.Pow(2, -0.008 * round));
         }
 
+        public bool ToAttackOrNotToAttack(Vector2 position)
+        {
+            foreach (var zomb in zombies)
+            {
+                if (zomb.attackCoolDown == 0)
+                {
+                    if ((position - zomb.position).Length() < 32)
+                    {
+                        zomb.attackCoolDown = 1 * 60;
+                        zomb.attacking = true;
+                        return true;
+                    }
+                    else
+                    {
+                        zomb.attacking = false;
+                        return false;
+                    }
+                }
+                else
+                {
+                    zomb.attackCoolDown--;
+                }
+                
+            }
+            return false;
+        }
         public void ToGroanOrNotToGroan()
         {
             foreach (var zomb in zombies)
             {
-                int rando = ran.Next(40);
+                int rando = ran.Next(1000);
+                SoundEffectInstance i = null;
 
-                if (rando == 1)
+                switch (rando)
                 {
-                    zomb.groans[0].Play();
+                    case 1:
+                        i = zomb.groans[0].CreateInstance();
+                        break;
+                    case 2:
+                        i = zomb.groans[1].CreateInstance();
+                        break;
+                    case 3:
+                        i = zomb.groans[2].CreateInstance();
+                        break;
+                    case 4:
+                        i = zomb.groans[3].CreateInstance();
+                        break;
                 }
-                else if (rando == 2)
+
+                if (i != null)
                 {
-                    zomb.groans[1].Play();
-                }
-                else if (rando == 3)
-                {
-                    zomb.groans[2].Play();
-                }
-                else if (rando == 4)
-                {
-                    zomb.groans[3].Play();
+                    if (!_activeSounds.ContainsKey(zomb))
+                        _activeSounds.Add(zomb, null);
+
+                    if (_activeSounds[zomb] == null || _activeSounds[zomb].State != SoundState.Playing)
+                    {
+                        i.Play();
+                        _activeSounds[zomb] = i;
+                    }
                 }
             }
-            
+
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
             foreach (var zomb in zombies)
             {
-                spriteBatch.Draw(zomb.texture, zomb.position, null, color: Color.White, rotation: zomb.rotation, origin: new Vector2(zomb.texture.Width/2, zomb.texture.Height/2));
+                if (zomb.attacking)
+                {
+                    spriteBatch.Draw(zomb.textureAttack, zomb.position, null, color: Color.White, rotation: zomb.rotation, origin: new Vector2(zomb.textureAttack.Width / 2, zomb.textureAttack.Height / 2));
+                }
+                else
+                {
+                    spriteBatch.Draw(zomb.texture, zomb.position, null, color: Color.White, rotation: zomb.rotation, origin: new Vector2(zomb.texture.Width / 2, zomb.texture.Height / 2));
+                }
+                
             }
         }
     }
