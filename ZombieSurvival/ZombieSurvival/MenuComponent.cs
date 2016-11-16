@@ -34,11 +34,11 @@ namespace ZombieSurvival
            
             menu.Items = new List<MenuChoice>
             {
-                new MenuChoice(menu) {Text = "Zombie Survival", IsEnabled = false},
-                new MenuChoice(menu) {Text = "START", Selected = true, ClickAction = MenuStartClicked, IsVisible = () => Game1.GameState != GameState.Paused},
-                new MenuChoice(menu) {Text = "PAUSED", ClickAction = MenuStartClicked, IsVisible = () => Game1.GameState == GameState.Paused, IsEnabled = false},
-                new MenuChoice(menu) {Text = "OPTIONS", ClickAction = MenuOptionsClicked, SubMenu = optionsMenu},
-                new MenuChoice(menu) {Text = "QUIT", ClickAction = MenuQuitClicked}
+                new MenuChoice(menu) {Text = "Zombie Survival", IsEnabled = false , IsVisible = () => Game1.GameState != GameState.Paused && Game1.GameState != GameState.Playing},
+                new MenuChoice(menu) {Text = "START", Selected = true, ClickAction = MenuStartClicked, IsVisible = () => Game1.GameState != GameState.Paused && Game1.GameState != GameState.Playing},
+                new MenuChoice(menu) {Text = "PAUSED", ClickAction = MenuStartClicked, IsVisible = () => Game1.GameState != GameState.Startup && Game1.GameState != GameState.Playing, IsEnabled = false},
+                new MenuChoice(menu) {Text = "OPTIONS", ClickAction = MenuOptionsClicked, SubMenu = optionsMenu, IsVisible = () => Game1.GameState != GameState.Paused && Game1.GameState != GameState.Playing},
+                new MenuChoice(menu) {Text = "QUIT", ClickAction = MenuQuitClicked, IsVisible = () => Game1.GameState != GameState.Paused && Game1.GameState != GameState.Playing}
             };
 
             optionsMenu.Items = new List<MenuChoice>
@@ -173,7 +173,10 @@ namespace ZombieSurvival
 
         public override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(backgroundColor);
+            if (Game1.GameState == GameState.Startup)
+            {
+                GraphicsDevice.Clear(backgroundColor);
+            }
             spriteBatch.Begin();
 
             foreach (var choice in activeMenu.Items)
@@ -192,8 +195,7 @@ namespace ZombieSurvival
 
         private void MenuStartClicked()
         {
-            backgroundColor = Color.Turquoise;
-            Game1.GameState = GameState.Paused;
+            Game1.GameState = GameState.Playing;
         }
 
         private void MenuSelectClicked()
