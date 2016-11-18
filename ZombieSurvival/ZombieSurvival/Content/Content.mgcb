@@ -66,6 +66,7 @@
 /processor:SongProcessor
 /processorParam:Quality=Best
 /build:bSong.ogg
+
 #begin Font.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
@@ -149,6 +150,7 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:zombie2_stand.png
+
 #begin Images/Option.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -178,14 +180,6 @@
 /processor:SongProcessor
 /processorParam:Quality=Best
 /build:Audio/ScaryBgMusic.mp3
-
-#begin menuFontNormal.bmp
-/importer:TextureImporter
-/processor:FontTextureProcessor
-/processorParam:FirstCharacter= 
-/processorParam:PremultiplyAlpha=True
-/processorParam:TextureFormat=Color
-/build:menuFontNormal.bmp
 
 #begin bullet.png
 /importer:TextureImporter
@@ -280,4 +274,58 @@
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
 /build:DyingZombie.ogg
+
+#begin hitman2_stand.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:hitman2_stand.png
+
+#begin hitman2_machine.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:hitman2_machine.png
+
+#begin hitman2_reload.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:hitman2_reload.png
+
+#begin click.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:click.ogg
+
+#begin primaryReload.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:primaryReload.ogg
+
+#begin secondaryReload.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:secondaryReload.ogg
 

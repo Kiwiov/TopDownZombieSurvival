@@ -29,8 +29,12 @@ namespace ZombieSurvival
         TmxMap map;
         ZombieManager zombieManager;
         Camera cam;
+        bool reloading;
 
-        Texture2D character;
+        Texture2D secondary;
+        Texture2D secondaryReload;
+        Texture2D primary;
+        Texture2D primaryReload;
         Texture2D bullet;
         Texture2D curs;
         Texture2D zombieTextureOne;
@@ -50,6 +54,9 @@ namespace ZombieSurvival
         SoundEffect shot;
         SoundEffect hit;
         SoundEffect dying;
+        SoundEffect click;
+        SoundEffect secondaryReloadSound;
+        SoundEffect primaryReloadSound;
 
         float rot;
         float stamina;
@@ -60,12 +67,24 @@ namespace ZombieSurvival
 
         int timeBetweenRounds;
         int timeBetweenRoundsTime;
+        int switchTimer;
+        int weaponCooldown;
+
+        private int primaryMagazine;
+        private int primaryTotalAmmo;
+        private int primaryReloadSpeed;
+        private int secondaryMagazine;
+        private int secondaryTotalAmmo;
+        private int secondaryReloadSpeed;
 
         MouseState ms;
         MouseState previousMs;
 
         PathFinder finder;
 
+        Weapon currentSecondary;
+        Weapon currentPrimary;
+        Weapon currentWeapon;
         public Game1()
         {
 
@@ -110,7 +129,10 @@ namespace ZombieSurvival
             zombieManager = new ZombieManager(Content.Load<Texture2D>("zoimbie1_stand"), Content.Load<Texture2D>("zoimbie1_hold"), Content.Load<Texture2D>("zombie2_stand"), Content.Load<Texture2D>("zombie2_hold"), tileEngineGood, Content.Load<SoundEffect>("Zombie_groan1"), Content.Load<SoundEffect>("Zombie_groan2"), Content.Load<SoundEffect>("Zombie_groan3"), Content.Load<SoundEffect>("Zombie_groan4"));
             zombieManager.SpawnZombies();
 
-            character = Content.Load<Texture2D>("hitman2_gun");
+            secondary = Content.Load<Texture2D>("hitman2_gun");
+            secondaryReload = Content.Load<Texture2D>("hitman2_stand");
+            primary = Content.Load<Texture2D>("hitman2_machine");
+            primaryReload = Content.Load<Texture2D>("hitman2_reload");
             bullet = Content.Load<Texture2D>("bullet");
             curs = Content.Load<Texture2D>("crshair_36px");
 
@@ -119,12 +141,26 @@ namespace ZombieSurvival
             shot = Content.Load<SoundEffect>("pistolShot");
             hit = Content.Load<SoundEffect>("HitMarkerSound");
             dying = Content.Load<SoundEffect>("DyingZombie");
+            click = Content.Load<SoundEffect>("click");
+            secondaryReloadSound = Content.Load<SoundEffect>("secondaryReload");
+            primaryReloadSound = Content.Load<SoundEffect>("primaryReload");
 
 
             //MediaPlayer.Play(bSong);
 
             MediaPlayer.IsRepeating = true;
+            currentSecondary = new Weapon(50, 1, "Pistol", /*21*/ int.MaxValue, 7, 2, 0, 0.03f, "Secondary", secondary, secondaryReload, 1, false);
+            currentPrimary = new Weapon(80, 1, "SMG", 120, 30, 2, 2, 0.09f, "Primary", primary, primaryReload, 2, true);
+            //currentPrimary = new Weapon(80, 8, "Shotgun", 20, 5, 2, 60, 0.3f, "Primary", primary, primaryReload, 1, false);
+            currentWeapon = currentSecondary;
 
+            primaryMagazine = currentPrimary.ammoMagazine;
+            primaryTotalAmmo = currentPrimary.ammoTotal;
+            primaryReloadSpeed = currentPrimary.reloadSpeed * 60;
+
+            secondaryMagazine = currentSecondary.ammoMagazine;
+            secondaryTotalAmmo = currentSecondary.ammoTotal;
+            secondaryReloadSpeed = currentSecondary.reloadSpeed * 60;
 
         }
 
@@ -138,6 +174,7 @@ namespace ZombieSurvival
             
             if (zombieManager.zombies.Count == 0)
             {
+                zombieManager._activeSounds.Clear();
                 if (timeBetweenRoundsTime == timeBetweenRounds * 60)
                 {
                     zombieManager.round++;
@@ -181,8 +218,7 @@ namespace ZombieSurvival
             {
                 healTime++;
             }
-
-            Debug.WriteLine(health);
+            
 
             if (health <= 0)
             {
@@ -194,11 +230,193 @@ namespace ZombieSurvival
             previousMs = ms;
             ms = Mouse.GetState();
 
-            if (ms.LeftButton == ButtonState.Pressed && previousMs.LeftButton != ms.LeftButton)
+            if (reloading)
             {
-                shot.Play(0.05f,0,0);
-                shots.Add(new Bullet(bullet, position, new Vector2(10 * (float)Math.Cos(rot), 10 * (float)Math.Sin(rot)),
-                    rot));
+                if (currentWeapon == currentPrimary)
+                {
+                    if (primaryReloadSpeed != 0)
+                    {
+                        primaryReloadSpeed--;
+                    }
+                    else
+                    {
+                        primaryReloadSpeed = currentPrimary.reloadSpeed * 60;
+                        reloading = false;
+                    }
+                }
+                else
+                {
+                    if (secondaryReloadSpeed != 0)
+                    {
+                        secondaryReloadSpeed--;
+                    }
+                    else
+                    {
+                        secondaryReloadSpeed = currentSecondary.reloadSpeed * 60;
+                        reloading = false;
+                    }
+                }
+                
+                
+            }
+
+            if (currentWeapon.automatic)
+            {
+                if (ms.LeftButton == ButtonState.Pressed && weaponCooldown == 0 && reloading == false)
+                {
+                    if (currentWeapon == currentPrimary)
+                    {
+                        if (primaryMagazine > 0)
+                        {
+                            primaryMagazine--;
+                            shot.Play(0.1f, 0, 0);
+                            shots.AddRange(currentWeapon.CreateBullet(bullet, position, rot));
+                            weaponCooldown = currentWeapon.fireRate;
+                        }
+                        else
+                        {
+                            if (ms.LeftButton == ButtonState.Pressed && previousMs.LeftButton != ms.LeftButton)
+                            {
+                                click.Play();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (secondaryMagazine > 0)
+                        {
+                            secondaryMagazine--;
+                            shot.Play(0.1f, 0, 0);
+                            shots.AddRange(currentWeapon.CreateBullet(bullet, position, rot));
+                            weaponCooldown = currentWeapon.fireRate;
+                        }
+                        else
+                        {
+                            if (ms.LeftButton == ButtonState.Pressed && previousMs.LeftButton != ms.LeftButton)
+                            {
+                                click.Play();
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (weaponCooldown != 0)
+                    {
+                        weaponCooldown--;
+                    }
+                    
+                }
+            }
+            else
+            {
+                if (ms.LeftButton == ButtonState.Pressed && weaponCooldown == 0 && previousMs.LeftButton != ms.LeftButton && reloading == false)
+                {
+                    if (currentWeapon == currentPrimary)
+                    {
+                        if (primaryMagazine > 0)
+                        {
+                            primaryMagazine--;
+                            shot.Play(0.05f, 0, 0);
+                            shots.AddRange(currentWeapon.CreateBullet(bullet, position, rot));
+                            weaponCooldown = currentWeapon.fireRate;
+                        }
+                        else
+                        {
+                            if (ms.LeftButton == ButtonState.Pressed && previousMs.LeftButton != ms.LeftButton)
+                            {
+                                click.Play();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (secondaryMagazine > 0)
+                        {
+                            secondaryMagazine--;
+                            shot.Play(0.05f, 0, 0);
+                            shots.AddRange(currentWeapon.CreateBullet(bullet, position, rot));
+                            weaponCooldown = currentWeapon.fireRate;
+                        }
+                        else
+                        {
+                            if (ms.LeftButton == ButtonState.Pressed && previousMs.LeftButton != ms.LeftButton)
+                            {
+                                click.Play();
+                            }
+                        }
+                    }
+                    
+                }
+                else
+                {
+                    if (weaponCooldown != 0)
+                    {
+                        weaponCooldown--;
+                    }
+
+                }
+            }
+            
+            if (kb.IsKeyDown(Keys.Q) && switchTimer == 0 && reloading == false)
+            {
+                
+                if (currentWeapon == currentPrimary)
+                {
+                    switchTimer = 15;
+                    currentWeapon = currentSecondary;
+                }
+                else
+                {
+                    switchTimer = 15;
+                    currentWeapon = currentPrimary;
+                }
+            }
+            else
+            {
+                if (switchTimer != 0)
+                {
+                    switchTimer--;
+                }
+                
+            }
+
+            if (kb.IsKeyDown(Keys.R) && currentWeapon == currentPrimary && primaryMagazine != currentPrimary.ammoMagazine && reloading == false)
+            {
+                
+                int temp = currentPrimary.ammoMagazine - primaryMagazine;
+                if (primaryTotalAmmo >= temp)
+                {
+                    primaryReloadSound.Play();
+                    primaryMagazine += temp;
+                    primaryTotalAmmo -= temp;
+                    reloading = true;
+                }
+                else if(primaryTotalAmmo != 0)
+                {
+                    primaryReloadSound.Play();
+                    primaryMagazine += primaryTotalAmmo;
+                    primaryTotalAmmo -= primaryTotalAmmo;
+                    reloading = true;
+                }
+            }
+            else if(kb.IsKeyDown(Keys.R) && currentWeapon == currentSecondary && secondaryMagazine != currentSecondary.ammoMagazine && reloading == false)
+            {
+                int temp = currentSecondary.ammoMagazine - secondaryMagazine;
+                if (secondaryTotalAmmo >= temp)
+                {
+                    secondaryReloadSound.Play();
+                    secondaryMagazine += temp;
+                    secondaryTotalAmmo -= temp;
+                    reloading = true;
+                }
+                else if (secondaryTotalAmmo != 0)
+                {
+                    secondaryReloadSound.Play();
+                    secondaryMagazine += secondaryTotalAmmo;
+                    secondaryTotalAmmo -= secondaryTotalAmmo;
+                    reloading = true;
+                }
             }
 
 
@@ -254,6 +472,16 @@ namespace ZombieSurvival
             {
                 zombieManager.KillAllZombies();
                 //zombieManager.KillOneZombie();
+            }
+
+            if (kb.IsKeyDown(Keys.D1))
+            {
+                currentWeapon = currentPrimary;
+            }
+
+            if (kb.IsKeyDown(Keys.D2))
+            {
+                currentWeapon = currentSecondary;
             }
 
 
@@ -512,7 +740,7 @@ namespace ZombieSurvival
                                 RasterizerState.CullNone,
                                 null,
                                 cam.get_transformation(GraphicsDevice));
-            spriteBatch.Draw(character, position, null, color: Color.White, rotation: rot, origin: new Vector2(character.Bounds.Center.X, character.Bounds.Center.Y));
+            spriteBatch.Draw(currentWeapon.texture, position, null, color: Color.White, rotation: rot, origin: new Vector2(currentWeapon.texture.Bounds.Center.X, currentWeapon.texture.Bounds.Center.Y));
             zombieManager.Draw(spriteBatch);
             spriteBatch.Draw(curs, mousePosition, null, color: Color.RoyalBlue, rotation: 0, origin: new Vector2(curs.Bounds.Center.X, curs.Bounds.Center.Y));
             foreach (var shot in shots)

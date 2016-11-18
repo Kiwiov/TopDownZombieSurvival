@@ -19,7 +19,7 @@ namespace ZombieSurvival
         public float delay;
         public List<Astar.Node> nodes;
         public Vector2 range;
-        public float health = 100;
+        public float health;
         public Rectangle hitbox;
         public bool attacking = false;
         public float attackCoolDown;
@@ -27,7 +27,7 @@ namespace ZombieSurvival
 
         public List<SoundEffect> groans;
 
-        public Zombie(Texture2D Texture, Texture2D TextureAttack, Vector2 Position, Vector2 Speed, float Rotation, List<SoundEffect> Groans)
+        public Zombie(Texture2D Texture, Texture2D TextureAttack, Vector2 Position, Vector2 Speed, float Rotation, List<SoundEffect> Groans, float Health)
         {
             texture = Texture;
             textureAttack = TextureAttack;
@@ -36,6 +36,7 @@ namespace ZombieSurvival
             rotation = Rotation;
             hitbox = new Rectangle((int)position.X - texture.Width / 2,(int)position.Y - texture.Height / 2,43,43);
             groans = Groans;
+            health = Health;
         }
     }
 }

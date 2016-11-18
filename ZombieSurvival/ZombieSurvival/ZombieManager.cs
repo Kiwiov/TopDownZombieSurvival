@@ -123,7 +123,7 @@ namespace ZombieSurvival
         {
             GetSpawningTiles();
 
-            if (zombies.Count < 500 && zombiesToSpawn > 0)
+            if (zombies.Count < 100 && zombiesToSpawn > 0)
             {
                 zombiesToSpawn--;
 
@@ -132,11 +132,11 @@ namespace ZombieSurvival
 
                 if (ran.Next(1, 3) == 2)
                 {
-                    zombies.Add(new Zombie(zombieTextureStandingOne, zombieTextureAttackingOne, spawnPoint, new Vector2(0, 0), 0, groans));
+                    zombies.Add(new Zombie(zombieTextureStandingOne, zombieTextureAttackingOne, spawnPoint, new Vector2(0, 0), 0, groans, 200));
                 }
                 else
                 {
-                    zombies.Add(new Zombie(zombieTextureStandingTwo, zombieTextureAttackingTwo, spawnPoint, new Vector2(0, 0), 0, groans));
+                    zombies.Add(new Zombie(zombieTextureStandingTwo, zombieTextureAttackingTwo, spawnPoint, new Vector2(0, 0), 0, groans, 200));
                 }
             }
         }
@@ -171,8 +171,10 @@ namespace ZombieSurvival
             {
                 if (zomb.attackCoolDown == 0)
                 {
-                    if ((position - zomb.position).Length() < 32)
+                    
+                    if (Math.Abs(position.X - zomb.position.X) < 32 && Math.Abs(position.Y - zomb.position.Y) < 32)
                     {
+                        
                         zomb.attackCoolDown = 1 * 60;
                         zomb.attacking = true;
                         return true;
@@ -180,12 +182,16 @@ namespace ZombieSurvival
                     else
                     {
                         zomb.attacking = false;
-                        return false;
+                     
                     }
                 }
                 else
                 {
-                    zomb.attackCoolDown--;
+                    if (zomb.attackCoolDown != 0)
+                    {
+                        zomb.attackCoolDown--;
+                    }
+                   
                 }
                 
             }
